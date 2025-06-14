@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Heart, Sun, Zap, Compass } from 'lucide-react';
+import { ArrowLeft, Heart, Sun, Zap, Compass, Cloud, Lightbulb } from 'lucide-react';
 
 interface MotivationSpaceProps {
   onNavigate: (screen: 'home') => void;
@@ -10,24 +10,94 @@ const MotivationSpace: React.FC<MotivationSpaceProps> = ({ onNavigate }) => {
   const [showAffirmation, setShowAffirmation] = useState(false);
 
   const feelings = [
-    { value: 'discouraged', label: 'Discouraged', icon: Heart },
-    { value: 'anxious', label: 'Anxious', icon: Zap },
-    { value: 'excited', label: 'Excited', icon: Sun },
-    { value: 'hopeful', label: 'Hopeful', icon: Compass }
+    { 
+      value: 'discouraged', 
+      label: 'Discouraged', 
+      icon: Heart,
+      caption: 'Gentle steps are still steps forward.'
+    },
+    { 
+      value: 'anxious', 
+      label: 'Anxious', 
+      icon: Zap,
+      caption: "You don't need all the answers right now."
+    },
+    { 
+      value: 'excited', 
+      label: 'Excited', 
+      icon: Sun,
+      caption: 'Harness this moment — it\'s yours.'
+    },
+    { 
+      value: 'hopeful', 
+      label: 'Hopeful', 
+      icon: Compass,
+      caption: 'Hold on to that spark.'
+    },
+    { 
+      value: 'overwhelmed', 
+      label: 'Overwhelmed', 
+      icon: Cloud,
+      caption: 'One breath, one step at a time.'
+    },
+    { 
+      value: 'inspired', 
+      label: 'Inspired', 
+      icon: Lightbulb,
+      caption: 'This feeling is magic — capture it.'
+    }
   ];
 
   const affirmations = {
-    discouraged: "Even the best stories have quiet chapters. This is one of yours.",
-    anxious: "You are more than one moment.",
-    excited: "Your energy is your gift — share it.",
-    hopeful: "You're already growing. Keep going."
+    discouraged: [
+      "Even the best stories have quiet chapters. This is one of yours.",
+      "This moment doesn't define your whole story — it's just a page.",
+      "Your voice hasn't disappeared — it's just resting. Give it time."
+    ],
+    anxious: [
+      "You don't need all the answers right now — just the courage to keep going.",
+      "Breathe. The pressure isn't stronger than your potential.",
+      "It's okay to move gently. Even slow steps are still forward."
+    ],
+    excited: [
+      "That energy is powerful — carry it into your next creation.",
+      "Let your joy fuel your voice — the world's listening.",
+      "You're on fire — stay grounded, and let your work shine."
+    ],
+    hopeful: [
+      "Hold on to that spark — it's your guide through the fog.",
+      "Hope is a quiet kind of power. Let it lead.",
+      "You're already growing. Keep going."
+    ],
+    overwhelmed: [
+      "You don't have to do it all at once. Start with one breath, one step.",
+      "It's okay to pause. Rest is part of the rhythm, not a break from it.",
+      "You're carrying a lot — be proud of how far you've come, even if it feels heavy."
+    ],
+    inspired: [
+      "Run with this feeling — it doesn't have to be perfect to be powerful.",
+      "When inspiration strikes, follow it like a melody. Let it take the lead.",
+      "What you're feeling right now is magic — capture it before it fades."
+    ]
   };
 
   const affirmationColors = {
     discouraged: 'from-rose-200 to-pink-200',
     anxious: 'from-blue-200 to-indigo-200',
     excited: 'from-yellow-200 to-orange-200',
-    hopeful: 'from-green-200 to-teal-200'
+    hopeful: 'from-green-200 to-teal-200',
+    overwhelmed: 'from-purple-200 to-violet-200',
+    inspired: 'from-amber-200 to-yellow-200'
+  };
+
+  const getRandomAffirmation = (feeling: string) => {
+    const feelingAffirmations = affirmations[feeling as keyof typeof affirmations];
+    const randomIndex = Math.floor(Math.random() * feelingAffirmations.length);
+    return feelingAffirmations[randomIndex];
+  };
+
+  const getSelectedFeelingData = () => {
+    return feelings.find(f => f.value === selectedFeeling);
   };
 
   const handleFeelingSelect = (feeling: string) => {
@@ -91,7 +161,7 @@ const MotivationSpace: React.FC<MotivationSpaceProps> = ({ onNavigate }) => {
           <div className="text-center space-y-6">
             <div className="mb-6">
               <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${affirmationColors[selectedFeeling as keyof typeof affirmationColors]} rounded-full mb-4`}>
-                {React.createElement(feelings.find(f => f.value === selectedFeeling)?.icon || Heart, {
+                {React.createElement(getSelectedFeelingData()?.icon || Heart, {
                   className: "w-8 h-8 text-gray-700"
                 })}
               </div>
@@ -102,13 +172,13 @@ const MotivationSpace: React.FC<MotivationSpaceProps> = ({ onNavigate }) => {
 
             <div className={`bg-gradient-to-br ${affirmationColors[selectedFeeling as keyof typeof affirmationColors]} p-8 rounded-2xl border-2 border-white/50 shadow-lg`}>
               <p className="text-gray-800 text-xl leading-relaxed font-medium">
-                {affirmations[selectedFeeling as keyof typeof affirmations]}
+                {getRandomAffirmation(selectedFeeling)}
               </p>
             </div>
 
             <div className="pt-6 space-y-3">
               <p className="text-sm text-gray-600 italic">
-                Take a deep breath. You've got this.
+                {getSelectedFeelingData()?.caption}
               </p>
               
               <div className="space-y-3">

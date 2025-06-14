@@ -11,6 +11,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
     customCreativeType: '',
     inspirations: [] as string[],
     customInspiration: '',
+    traits: '',
     description: '',
     tones: [] as string[],
     customTone: ''
@@ -59,26 +60,44 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
     return `${items.slice(0, -1).map(item => item.toLowerCase()).join(', ')}, and ${items[items.length - 1].toLowerCase()}`;
   };
 
-  const formatDescription = (description: string) => {
-    // Handle list-style descriptions with proper grammar
-    if (description.includes(',')) {
-      const traits = description.split(',').map(trait => trait.trim());
-      if (traits.length > 1) {
-        const formattedTraits = formatList(traits);
-        return `Words like ${formattedTraits} capture how I move through the world`;
+  const formatTraits = (traits: string) => {
+    if (traits.includes(',')) {
+      const traitList = traits.split(',').map(trait => trait.trim());
+      if (traitList.length > 1) {
+        return formatList(traitList);
       }
     }
-    return description;
+    return traits.toLowerCase();
+  };
+
+  const formatDescription = (description: string, traits: string) => {
+    // Create natural sentences based on the input structure
+    const formattedTraits = formatTraits(traits);
+    const hasMultipleTraits = traits.includes(',');
+    
+    if (hasMultipleTraits) {
+      if (description.trim()) {
+        return `I'm known for being ${formattedTraits}. I'd say I'm someone who ${description.toLowerCase()} — that part of me is always evolving.`;
+      } else {
+        return `People often describe me as ${formattedTraits}, which shapes how I create.`;
+      }
+    } else {
+      if (description.trim()) {
+        return `I'm someone who's ${traits.toLowerCase()}, with a tendency to ${description.toLowerCase()}.`;
+      } else {
+        return `I'm someone who's ${traits.toLowerCase()}.`;
+      }
+    }
   };
 
   const generateBio = () => {
     const creativeTypes = getCreativeTypes();
     const inspirationList = getInspirations();
     const toneList = getTones();
-    const description = formatDescription(formData.description);
-
+    
     const creativeTypeText = formatList(creativeTypes);
     const inspirationText = formatList(inspirationList);
+    const personalDescription = formatDescription(formData.description, formData.traits);
 
     // Blend styles based on selected tones
     const hasPoetic = toneList.some(tone => tone.toLowerCase().includes('poetic'));
@@ -98,6 +117,9 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
           if (tone.includes('gentle') || tone.includes('calm')) {
             return 'in a gentle, thoughtful way';
           }
+          if (tone.includes('playful')) {
+            return 'with playfulness at the heart of my work';
+          }
           return `with ${tone} shaping my expression`;
         }
         return `through a ${tone} lens`;
@@ -109,27 +131,27 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
 
     // Choose template based on dominant tone or blend
     if (hasPoetic && hasBold) {
-      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${description}. I create ${formatToneDescription()}, letting raw energy meet artistic flow in everything I make.`;
+      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${personalDescription} I create ${formatToneDescription()}, letting raw energy meet artistic flow in everything I make.`;
     }
     
     if (hasPoetic) {
-      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I connect with others while staying rooted in who I am.`;
+      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${personalDescription} ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I connect with others while staying rooted in who I am.`;
     }
     
     if (hasBold) {
-      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I create work that's honest and alive.`;
+      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${personalDescription} ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I create work that's honest and alive.`;
     }
     
     if (hasHonest) {
-      return `As a ${creativeTypeText}, my path has been shaped by ${inspirationText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I bring authenticity to every piece of work I make.`;
+      return `As a ${creativeTypeText}, my path has been shaped by ${inspirationText}. ${personalDescription} ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I bring authenticity to every piece of work I make.`;
     }
     
     if (hasSoftSpoken) {
-      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${description} feels true to how I create. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I find ways to connect quietly but meaningfully.`;
+      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${personalDescription} ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I find ways to connect quietly but meaningfully.`;
     }
 
     // Default template for custom tones or combinations
-    return `Driven by ${inspirationText}, I create as a ${creativeTypeText}. ${description}. The way I tell my story — ${formatToneDescription()} — is what makes my voice mine.`;
+    return `Driven by ${inspirationText}, I create as a ${creativeTypeText}. ${personalDescription} The way I tell my story — ${formatToneDescription()} — is what makes my voice mine.`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -141,7 +163,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
     const hasTones = formData.tones.length > 0 && 
       (!formData.tones.includes('Other') || formData.customTone);
     
-    if (hasCreativeTypes && hasInspirations && formData.description && hasTones) {
+    if (hasCreativeTypes && hasInspirations && formData.traits && hasTones) {
       setShowResult(true);
     }
   };
@@ -165,6 +187,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
       customCreativeType: '',
       inspirations: [],
       customInspiration: '',
+      traits: '',
       description: '', 
       tones: [],
       customTone: ''
@@ -265,18 +288,33 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
               )}
             </div>
 
-            {/* Self Description */}
+            {/* Three Traits */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                How would you describe yourself?
+                Three words that describe you
+              </label>
+              <input
+                type="text"
+                value={formData.traits}
+                onChange={(e) => handleInputChange('traits', e.target.value)}
+                placeholder="empathetic, passionate, creative"
+                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+            </div>
+
+            {/* Freeform Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tell us more about yourself (optional)
               </label>
               <input
                 type="text"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="passionate about storytelling, always curious, deeply empathetic..."
+                placeholder="loves experimenting with form and color, always questioning the status quo..."
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
-                required
               />
               <p className="text-xs text-gray-500 mt-1">Share what makes you unique</p>
             </div>
