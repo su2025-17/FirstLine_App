@@ -7,12 +7,12 @@ interface IntroBuilderProps {
 
 const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
-    creativeType: '',
+    creativeTypes: [] as string[],
     customCreativeType: '',
-    inspiration: '',
+    inspirations: [] as string[],
     customInspiration: '',
     description: '',
-    tone: '',
+    tones: [] as string[],
     customTone: ''
   });
   const [showResult, setShowResult] = useState(false);
@@ -29,49 +29,130 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
     'Bold', 'Honest', 'Poetic', 'Soft-Spoken', 'Other'
   ];
 
-  const getCreativeType = () => {
-    return formData.creativeType === 'Other' ? formData.customCreativeType : formData.creativeType;
+  const getCreativeTypes = () => {
+    const types = formData.creativeTypes.filter(type => type !== 'Other');
+    if (formData.creativeTypes.includes('Other') && formData.customCreativeType) {
+      types.push(formData.customCreativeType);
+    }
+    return types;
   };
 
-  const getInspiration = () => {
-    return formData.inspiration === 'Other' ? formData.customInspiration : formData.inspiration;
+  const getInspirations = () => {
+    const inspirationList = formData.inspirations.filter(inspiration => inspiration !== 'Other');
+    if (formData.inspirations.includes('Other') && formData.customInspiration) {
+      inspirationList.push(formData.customInspiration);
+    }
+    return inspirationList;
   };
 
-  const getTone = () => {
-    return formData.tone === 'Other' ? formData.customTone : formData.tone;
+  const getTones = () => {
+    const toneList = formData.tones.filter(tone => tone !== 'Other');
+    if (formData.tones.includes('Other') && formData.customTone) {
+      toneList.push(formData.customTone);
+    }
+    return toneList;
+  };
+
+  const formatList = (items: string[]) => {
+    if (items.length === 1) return items[0].toLowerCase();
+    if (items.length === 2) return `${items[0].toLowerCase()} and ${items[1].toLowerCase()}`;
+    return `${items.slice(0, -1).map(item => item.toLowerCase()).join(', ')}, and ${items[items.length - 1].toLowerCase()}`;
+  };
+
+  const formatDescription = (description: string) => {
+    // Handle list-style descriptions with proper grammar
+    if (description.includes(',')) {
+      const traits = description.split(',').map(trait => trait.trim());
+      if (traits.length > 1) {
+        const formattedTraits = formatList(traits);
+        return `Words like ${formattedTraits} capture how I move through the world`;
+      }
+    }
+    return description;
   };
 
   const generateBio = () => {
-    const creativeType = getCreativeType().toLowerCase();
-    const inspiration = getInspiration().toLowerCase();
-    const description = formData.description;
-    const tone = getTone().toLowerCase();
+    const creativeTypes = getCreativeTypes();
+    const inspirationList = getInspirations();
+    const toneList = getTones();
+    const description = formatDescription(formData.description);
 
-    const templates = {
-      bold: `I'm a ${creativeType} inspired by ${inspiration}. ${description} — that's how I show up in the world. Through a ${tone} lens, I create work that's honest and alive.`,
+    const creativeTypeText = formatList(creativeTypes);
+    const inspirationText = formatList(inspirationList);
+
+    // Blend styles based on selected tones
+    const hasPoetic = toneList.some(tone => tone.toLowerCase().includes('poetic'));
+    const hasBold = toneList.some(tone => tone.toLowerCase().includes('bold'));
+    const hasHonest = toneList.some(tone => tone.toLowerCase().includes('honest'));
+    const hasSoftSpoken = toneList.some(tone => tone.toLowerCase().includes('soft'));
+
+    // Create tone description that handles custom tones grammatically
+    const formatToneDescription = () => {
+      if (toneList.length === 1) {
+        const tone = toneList[0].toLowerCase();
+        // Handle custom tones with better grammar
+        if (!['bold', 'honest', 'poetic', 'soft-spoken'].includes(tone)) {
+          if (tone.includes('humor') || tone.includes('funny')) {
+            return 'with humor guiding my perspective';
+          }
+          if (tone.includes('gentle') || tone.includes('calm')) {
+            return 'in a gentle, thoughtful way';
+          }
+          return `with ${tone} shaping my expression`;
+        }
+        return `through a ${tone} lens`;
+      }
       
-      honest: `As a ${creativeType}, my path has been shaped by ${inspiration}. ${description} captures how I move through life. With a ${tone} voice, I bring authenticity to every piece of work I make.`,
-      
-      poetic: `There's a rhythm in ${inspiration} that fuels me as a ${creativeType}. ${description} — this feels true to how I create. A ${tone} voice lets me connect with others while staying rooted in who I am.`,
-      
-      'soft-spoken': `I'm a ${creativeType} inspired by ${inspiration}. Describing myself as ${description} feels true to how I create. A ${tone} voice lets me connect with others while staying rooted in who I am.`,
-      
-      default: `Driven by ${inspiration}, I create as a ${creativeType} who's ${description}. The way I tell my story — raw, real, and with a ${tone} perspective — is what makes my voice mine.`
+      const formattedTones = formatList(toneList);
+      return `blending ${formattedTones} perspectives`;
     };
 
-    const selectedTone = getTone().toLowerCase().replace('-', '');
-    return templates[selectedTone as keyof typeof templates] || templates.default;
+    // Choose template based on dominant tone or blend
+    if (hasPoetic && hasBold) {
+      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${description}. I create ${formatToneDescription()}, letting raw energy meet artistic flow in everything I make.`;
+    }
+    
+    if (hasPoetic) {
+      return `There's a rhythm in ${inspirationText} that fuels me as a ${creativeTypeText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I connect with others while staying rooted in who I am.`;
+    }
+    
+    if (hasBold) {
+      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I create work that's honest and alive.`;
+    }
+    
+    if (hasHonest) {
+      return `As a ${creativeTypeText}, my path has been shaped by ${inspirationText}. ${description}. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I bring authenticity to every piece of work I make.`;
+    }
+    
+    if (hasSoftSpoken) {
+      return `I'm a ${creativeTypeText} inspired by ${inspirationText}. ${description} feels true to how I create. ${formatToneDescription().charAt(0).toUpperCase() + formatToneDescription().slice(1)}, I find ways to connect quietly but meaningfully.`;
+    }
+
+    // Default template for custom tones or combinations
+    return `Driven by ${inspirationText}, I create as a ${creativeTypeText}. ${description}. The way I tell my story — ${formatToneDescription()} — is what makes my voice mine.`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const hasCreativeType = formData.creativeType && (formData.creativeType !== 'Other' || formData.customCreativeType);
-    const hasInspiration = formData.inspiration && (formData.inspiration !== 'Other' || formData.customInspiration);
-    const hasTone = formData.tone && (formData.tone !== 'Other' || formData.customTone);
+    const hasCreativeTypes = formData.creativeTypes.length > 0 && 
+      (!formData.creativeTypes.includes('Other') || formData.customCreativeType);
+    const hasInspirations = formData.inspirations.length > 0 && 
+      (!formData.inspirations.includes('Other') || formData.customInspiration);
+    const hasTones = formData.tones.length > 0 && 
+      (!formData.tones.includes('Other') || formData.customTone);
     
-    if (hasCreativeType && hasInspiration && formData.description && hasTone) {
+    if (hasCreativeTypes && hasInspirations && formData.description && hasTones) {
       setShowResult(true);
     }
+  };
+
+  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: checked 
+        ? [...(prev[field as keyof typeof prev] as string[]), value]
+        : (prev[field as keyof typeof prev] as string[]).filter(item => item !== value)
+    }));
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -80,12 +161,12 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
 
   const resetForm = () => {
     setFormData({ 
-      creativeType: '', 
+      creativeTypes: [],
       customCreativeType: '',
-      inspiration: '', 
+      inspirations: [],
       customInspiration: '',
       description: '', 
-      tone: '',
+      tones: [],
       customTone: ''
     });
     setShowResult(false);
@@ -122,59 +203,63 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
               </p>
             </div>
 
-            {/* Creative Type */}
+            {/* Creative Types */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                What kind of creative are you?
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                What kind of creative are you? (Select all that apply)
               </label>
-              <select
-                value={formData.creativeType}
-                onChange={(e) => handleInputChange('creativeType', e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
-                required
-              >
-                <option value="">Choose your creative path...</option>
+              <div className="space-y-2">
                 {creativeTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                  <label key={type} className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.creativeTypes.includes(type)}
+                      onChange={(e) => handleCheckboxChange('creativeTypes', type, e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-300"
+                    />
+                    <span className="text-gray-800">{type}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
               
-              {formData.creativeType === 'Other' && (
+              {formData.creativeTypes.includes('Other') && (
                 <input
                   type="text"
                   value={formData.customCreativeType}
                   onChange={(e) => handleInputChange('customCreativeType', e.target.value)}
                   placeholder="Enter your creative type..."
-                  className="w-full p-3 mt-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
+                  className="w-full p-3 mt-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
                   required
                 />
               )}
             </div>
 
-            {/* Inspiration */}
+            {/* Inspirations */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                What inspires you?
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                What inspires you? (Select all that apply)
               </label>
-              <select
-                value={formData.inspiration}
-                onChange={(e) => handleInputChange('inspiration', e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
-                required
-              >
-                <option value="">Select your inspiration...</option>
+              <div className="space-y-2">
                 {inspirations.map(inspiration => (
-                  <option key={inspiration} value={inspiration}>{inspiration}</option>
+                  <label key={inspiration} className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.inspirations.includes(inspiration)}
+                      onChange={(e) => handleCheckboxChange('inspirations', inspiration, e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-300"
+                    />
+                    <span className="text-gray-800">{inspiration}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
               
-              {formData.inspiration === 'Other' && (
+              {formData.inspirations.includes('Other') && (
                 <input
                   type="text"
                   value={formData.customInspiration}
                   onChange={(e) => handleInputChange('customInspiration', e.target.value)}
                   placeholder="What inspires you?"
-                  className="w-full p-3 mt-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
+                  className="w-full p-3 mt-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
                   required
                 />
               )}
@@ -196,30 +281,32 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
               <p className="text-xs text-gray-500 mt-1">Share what makes you unique</p>
             </div>
 
-            {/* Tone */}
+            {/* Tones */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                What tone best fits your voice or personality?
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                What tone best fits your voice or personality? (Select all that apply)
               </label>
-              <select
-                value={formData.tone}
-                onChange={(e) => handleInputChange('tone', e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
-                required
-              >
-                <option value="">Choose your tone...</option>
+              <div className="space-y-2">
                 {tones.map(tone => (
-                  <option key={tone} value={tone}>{tone}</option>
+                  <label key={tone} className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.tones.includes(tone)}
+                      onChange={(e) => handleCheckboxChange('tones', tone, e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-300"
+                    />
+                    <span className="text-gray-800">{tone}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
               
-              {formData.tone === 'Other' && (
+              {formData.tones.includes('Other') && (
                 <input
                   type="text"
                   value={formData.customTone}
                   onChange={(e) => handleInputChange('customTone', e.target.value)}
                   placeholder="Describe your tone..."
-                  className="w-full p-3 mt-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
+                  className="w-full p-3 mt-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
                   required
                 />
               )}

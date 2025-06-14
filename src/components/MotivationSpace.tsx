@@ -101,8 +101,8 @@ const MotivationSpace: React.FC<MotivationSpaceProps> = ({ onNavigate }) => {
             </div>
 
             <div className={`bg-gradient-to-br ${affirmationColors[selectedFeeling as keyof typeof affirmationColors]} p-8 rounded-2xl border-2 border-white/50 shadow-lg`}>
-              <p className="text-gray-800 text-xl leading-relaxed font-medium italic">
-                "{affirmations[selectedFeeling as keyof typeof affirmations]}"
+              <p className="text-gray-800 text-xl leading-relaxed font-medium">
+                {affirmations[selectedFeeling as keyof typeof affirmations]}
               </p>
             </div>
 
