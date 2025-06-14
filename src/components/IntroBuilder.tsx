@@ -9,7 +9,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
     creativeType: '',
     inspiration: '',
-    words: '',
+    description: '',
     tone: ''
   });
   const [showResult, setShowResult] = useState(false);
@@ -31,7 +31,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.creativeType && formData.inspiration && formData.words && formData.tone) {
+    if (formData.creativeType && formData.inspiration && formData.description && formData.tone) {
       setShowResult(true);
     }
   };
@@ -41,7 +41,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
   };
 
   const resetForm = () => {
-    setFormData({ creativeType: '', inspiration: '', words: '', tone: '' });
+    setFormData({ creativeType: '', inspiration: '', description: '', tone: '' });
     setShowResult(false);
   };
 
@@ -112,20 +112,20 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
               </select>
             </div>
 
-            {/* Three Words */}
+            {/* Self Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Describe yourself in three words
+                How would you describe yourself?
               </label>
               <input
                 type="text"
-                value={formData.words}
-                onChange={(e) => handleInputChange('words', e.target.value)}
-                placeholder="creative, passionate, authentic..."
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="passionate about storytelling, always curious, deeply empathetic..."
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white text-gray-800"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+              <p className="text-xs text-gray-500 mt-1">Share what makes you unique</p>
             </div>
 
             {/* Tone */}
@@ -169,7 +169,7 @@ const IntroBuilder: React.FC<IntroBuilderProps> = ({ onNavigate }) => {
               <p className="text-gray-800 text-lg leading-relaxed font-medium">
                 "I'm a <span className="text-purple-600 font-semibold">{formData.creativeType.toLowerCase()}</span> inspired by{' '}
                 <span className="text-blue-600 font-semibold">{formData.inspiration.toLowerCase()}</span>. I'm{' '}
-                <span className="text-pink-600 font-semibold">{formData.words}</span>, and I express myself through a{' '}
+                <span className="text-pink-600 font-semibold">{formData.description}</span>, and I express myself through a{' '}
                 <span className="text-indigo-600 font-semibold">{formData.tone.toLowerCase()}</span> lens."
               </p>
             </div>
